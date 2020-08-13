@@ -5,18 +5,13 @@ output:
   html_document:
     keep_md: true
 ---
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r, include = FALSE}
-#libraries needed
-library(tidyverse)
-library(ggplot2)
-```
+
+
 
 ## Loading and preprocessing the data
-```{r}
+
+```r
 # #libraries needed
 # library(tidyverse)
 # library(ggplot2)
@@ -38,14 +33,37 @@ rawdf$date <- as.Date(rawdf$date, "%Y-%m-%d")
 df <- na.omit(rawdf)
 
 head(rawdf)
-head(df)
+```
 
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
+head(df)
+```
+
+```
+##     steps       date interval
+## 289     0 2012-10-02        0
+## 290     0 2012-10-02        5
+## 291     0 2012-10-02       10
+## 292     0 2012-10-02       15
+## 293     0 2012-10-02       20
+## 294     0 2012-10-02       25
 ```
 
 
 ## What is mean total number of steps taken per day?
 
-```{r}
+
+```r
 ### What is mean total number of steps taken per day?
 #1. Calculate the total number of steps taken per day
 #For this part of the assignment, you can ignore the missing values in the dataset.
@@ -68,7 +86,15 @@ ggplot(steps_perday, aes(x = steps)) +
             subtitle = "By Day",
             y = "Frequency",
             x = "Number of Steps")
+```
 
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 #3. Calculate and report the mean and median of the total number of steps taken per day
 
 sum_stats_steps <- 
@@ -78,16 +104,23 @@ sum_stats_steps <-
       select(mean, median) %>%
       distinct()
 sum_stats_steps
+```
 
 ```
-The mean is `r format(round(sum_stats_steps$mean, 2), nsmall = 2)`.
+## # A tibble: 1 x 2
+##     mean median
+##    <dbl>  <int>
+## 1 10766.  10765
+```
+The mean is 10766.19.
 
-The median is `r sum_stats_steps$median` 
+The median is 10765 
 
 
 ## What is the average daily activity pattern?
 
-```{r}
+
+```r
 ###What is the average daily activity pattern?
 #1.Make a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
@@ -106,24 +139,42 @@ ggplot(steps_interval, aes(x = interval, y = steps)) +
             x = "5 minute intervals",
             y = "Avg. Number of Steps"
       )
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+```r
 #Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 max_interval <- steps_interval %>% arrange(desc(steps)) %>% .[1,]
 max_interval
 ```
 
-The maximum average number of steps in a single interval was `r max_interval$steps` and the corresponding interval was number `r max_interval$interval `
+```
+## # A tibble: 1 x 2
+##   steps interval
+##   <int>    <int>
+## 1 10927      835
+```
+
+The maximum average number of steps in a single interval was 10927 and the corresponding interval was number 835
 
 
 ## Imputing missing values
 
-```{r}
+
+```r
 #Imputing missing values
 #1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs
 NAs <- sum(is.na(rawdf$steps))
 NAs
+```
 
+```
+## [1] 2304
+```
 
+```r
 #2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
 # I create rawdf_imp as the original dataframe without NAs, using the mean for the 5 minutes interval instead
@@ -138,7 +189,21 @@ rawdf_imp <- rawdf %>%
       ungroup()
 
 head(rawdf_imp)
+```
 
+```
+## # A tibble: 6 x 3
+##    steps date       interval
+##    <dbl> <date>        <int>
+## 1 1.72   2012-10-01        0
+## 2 0.340  2012-10-01        5
+## 3 0.132  2012-10-01       10
+## 4 0.151  2012-10-01       15
+## 5 0.0755 2012-10-01       20
+## 6 2.09   2012-10-01       25
+```
+
+```r
 rawdf_imp_day <- rawdf_imp %>% 
       group_by(date) %>% 
       mutate(steps = sum(steps, na.rm = TRUE)) %>% 
@@ -158,19 +223,27 @@ ggplot(rawdf_imp_day, aes(x = steps)) +
             x = "Steps", 
             y = "Frequency"
       )
+```
 
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+```r
 #and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
 sum_stats_steps_imp <- rawdf_imp_day %>%
       summarise(mean = mean(steps), median = median(steps))
 ```
-For the imputed dataset, the maximum average number of steps in a single interval was `r format(round( sum_stats_steps_imp$mean, 2), nsmall = 2)` and the corresponding interval was number `r    format(round(sum_stats_steps_imp$median, 2), nsmall = 2)`
+For the imputed dataset, the maximum average number of steps in a single interval was 10766.19 and the corresponding interval was number 10766.19
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
 
+```r
 ###Are there differences in activity patterns between weekdays and weekends?
 
 #Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
@@ -200,3 +273,5 @@ ggplot(weekly, aes(x = interval, y = steps)) +
             y = "Avg. Number of Steps"
       )
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
